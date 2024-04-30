@@ -7,6 +7,7 @@ package org.uv.BDNCPractica02;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.PutMapping;
  * @author ASUS
  */
 @RestController
-@RequestMapping("/url")
+@RequestMapping("/personas")
 public class ControllerPersonas {
     
     @Autowired()
@@ -32,24 +33,48 @@ public class ControllerPersonas {
         return repositoryPersonas.findAll();
     }
     
-    @GetMapping("/{id}")
-    public Persona get(@PathVariable String id) {
-        return null;
+     @GetMapping("/{id}")
+    public ResponseEntity<Persona> get(@PathVariable String id) {
+        Optional<Persona> persona = repositoryPersonas.findById(id);
+        if (persona.isPresent()) {
+            return ResponseEntity.ok(persona.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
     
-    @PutMapping("/{id}")
-    public ResponseEntity<?> put(@PathVariable String id, @RequestBody Persona input) {
-        return null;
+      @PutMapping("/{id}")
+    public ResponseEntity<Persona> put(@PathVariable String id, @RequestBody Persona input) {
+        Optional<Persona> existingPersona = repositoryPersonas.findById(id);
+        if (existingPersona.isPresent()) {
+            Persona updatedPersona = existingPersona.get();
+            updatedPersona.setNombre(input.getNombre());
+            updatedPersona.setDireccion(input.getDireccion());
+            updatedPersona.setTelefono(input.getTelefono());
+
+
+            repositoryPersonas.save(updatedPersona);
+            return ResponseEntity.ok(updatedPersona);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
     
     @PostMapping
-    public ResponseEntity<?> post(@RequestBody Persona input) {
-        return null;
+    public ResponseEntity<Persona> post(@RequestBody Persona input) {
+        Persona nuevaPersona = repositoryPersonas.save(input);
+        return ResponseEntity.ok(nuevaPersona);
     }
     
-    @DeleteMapping("/{id}")
+     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        return null;
+        Optional<Persona> persona = repositoryPersonas.findById(id);
+        if (persona.isPresent()) {
+            repositoryPersonas.deleteById(id);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
     
 }
